@@ -1155,7 +1155,6 @@ let puFab = 15.20, puMont = 5.20;
 // ─── DOM ───
 const $cat = document.getElementById('categoria');  
 const $prod = document.getElementById('producto');
-const $search = document.getElementById('search');
 const $preview = document.getElementById('preview');
 const $cant = document.getElementById('cantidad');
 const $unidad = document.getElementById('unidad');
@@ -1260,29 +1259,7 @@ function renderItems() {
   });
 }
 
-// ─── CATÁLOGO ───
-let srchTm = null;
-function debounceSearch() {
-  clearTimeout(srchTm);
-  const term = $search.value.trim().toLowerCase();
-  srchTm = setTimeout(() => {
-    if (term.length < 2) { onCategoryChange(); return; }
-    let res = [];
-    Object.entries(CAT).forEach(([cat,prods]) => prods.forEach(p => {
-      if (p.descripcion.toLowerCase().includes(term)||p.codigo.toLowerCase().includes(term))
-        res.push({...p, cat});
-    }));
-    $prod.innerHTML = '<option value="">— Resultados —</option>';
-    res.slice(0,20).forEach(p => {
-      const o = document.createElement('option');
-      o.value = p.codigo;
-      o.setAttribute('data-cat', p.cat);
-      o.textContent = `${p.descripcion}`;
-      $prod.appendChild(o);
-    });
-    updatePreview(null);
-  }, 280);
-}
+
 function onCategoryChange() {
   const cat = $cat.value;
   $prod.innerHTML = '<option value="">— Seleccionar producto —</option>';
