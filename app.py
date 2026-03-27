@@ -16,17 +16,18 @@ import json
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=["https://costos-comasa.vercel.app", "http://localhost:5000"])
 
 # ─── CONFIGURACIÓN BASE DE DATOS ───
 DB_CONFIG = {
-    'host': 'localhost',
-    'port': 3306,
-    'database': 'comasa',
-    'user': 'root',       # ← cambia si tu usuario es distinto
-    'password': '',        # ← pon tu contraseña de MySQL aquí
+    'host': os.getenv('DB_HOST'),
+    'port': int(os.getenv('DB_PORT', 14628)),
+    'database': os.getenv('DB_NAME', 'defaultdb'),
+    'user': os.getenv('DB_USER', 'avnadmin'),
+    'password': os.getenv('DB_PASSWORD'),
     'charset': 'utf8mb4',
-    'use_unicode': True,    
+    'use_unicode': True,
+    'ssl_disabled': False,
 }
 
 # ─── CONFIGURACIÓN OPENSEARCH (AIVEN) ───
