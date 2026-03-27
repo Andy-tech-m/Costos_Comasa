@@ -524,138 +524,85 @@ function exportXLSX() {
   const ws = {};
   const merges = [];
   let R = 0;
-  const COLS = 8; // columnas 0..8 → 9 columnas en total
+  const COLS = 8;
 
-  // ── helpers ──
-  function setCell(c, r, v, s) {
-    ws[XLSX.utils.encode_cell({ c, r })] = { v, t: typeof v === 'number' ? 'n' : 's', s };
-  }
-  function numCell(c, r, v, fmt, s) {
-    ws[XLSX.utils.encode_cell({ c, r })] = { v, t: 'n', z: fmt || '#,##0.00', s };
-  }
-  function fmlaCell(c, r, f, fmt, s) {
-    ws[XLSX.utils.encode_cell({ c, r })] = { f, t: 'n', z: fmt || '#,##0.00', s };
-  }
-  function merge(c1, r1, c2, r2) {
-    merges.push({ s: { c: c1, r: r1 }, e: { c: c2, r: r2 } });
-  }
+  function cell(c,r,v,s){ const a=XLSX.utils.encode_cell({c,r}); ws[a]={v,t:typeof v==='number'?'n':'s',s}; }
+  function numCell(c,r,v,fmt,s){ const a=XLSX.utils.encode_cell({c,r}); ws[a]={v,t:'n',z:fmt||'#,##0.00',s}; }
+  function fmlaCell(c,r,f,fmt,s){ const a=XLSX.utils.encode_cell({c,r}); ws[a]={f,t:'n',z:fmt||'#,##0.00',s}; }
+  function merge(c1,r1,c2,r2){ merges.push({s:{c:c1,r:r1},e:{c:c2,r:r2}}); }
 
-  // ── estilos ──
-  const sBrand       = { font:{bold:true,sz:14,color:{rgb:'FFFFFF'}}, fill:{fgColor:{rgb:'1A3A5C'}}, alignment:{horizontal:'center',vertical:'center'} };
-  const sMeta        = { font:{sz:10,color:{rgb:'333333'}}, fill:{fgColor:{rgb:'EEF2F7'}}, alignment:{horizontal:'left'} };
-  const sMetaLabel   = { font:{bold:true,sz:10,color:{rgb:'1A3A5C'}}, fill:{fgColor:{rgb:'EEF2F7'}} };
-  const sHeader      = { font:{bold:true,sz:10,color:{rgb:'FFFFFF'}}, fill:{fgColor:{rgb:'2E6DA4'}}, alignment:{horizontal:'center',wrapText:true} };
-  const sItemGroup   = { font:{bold:true,sz:10,color:{rgb:'1A3A5C'}}, fill:{fgColor:{rgb:'D6E4F0'}}, alignment:{horizontal:'left'} };
-  const sItemGroupR  = { font:{bold:true,sz:10,color:{rgb:'1A3A5C'}}, fill:{fgColor:{rgb:'D6E4F0'}}, alignment:{horizontal:'right'} };
-  const sSub         = { font:{sz:9,color:{rgb:'222222'}}, fill:{fgColor:{rgb:'FFFFFF'}}, alignment:{horizontal:'left',indent:1} };
-  const sSubNum      = { font:{sz:9,color:{rgb:'222222'}}, fill:{fgColor:{rgb:'FFFFFF'}}, alignment:{horizontal:'right'} };
-  const sSubFml      = { font:{sz:9,color:{rgb:'000099'}}, fill:{fgColor:{rgb:'FFFFFF'}}, alignment:{horizontal:'right'} };
-  const sSubRate     = { font:{sz:9,color:{rgb:'0000CC'}}, fill:{fgColor:{rgb:'FFFFFF'}}, alignment:{horizontal:'right'} };
-  const sTotal       = { font:{bold:true,sz:11,color:{rgb:'FFFFFF'}}, fill:{fgColor:{rgb:'1A3A5C'}}, alignment:{horizontal:'right'} };
-  const sTotalLabel  = { font:{bold:true,sz:11,color:{rgb:'FFFFFF'}}, fill:{fgColor:{rgb:'1A3A5C'}}, alignment:{horizontal:'center'} };
+  const sBrand={font:{bold:true,sz:14,color:{rgb:'FFFFFF'}},fill:{fgColor:{rgb:'1A3A5C'}},alignment:{horizontal:'center',vertical:'center'}};
+  const sMeta={font:{sz:10,color:{rgb:'333333'}},fill:{fgColor:{rgb:'EEF2F7'}},alignment:{horizontal:'left'}};
+  const sMetaLabel={font:{bold:true,sz:10,color:{rgb:'1A3A5C'}},fill:{fgColor:{rgb:'EEF2F7'}}};
+  const sHeader={font:{bold:true,sz:10,color:{rgb:'FFFFFF'}},fill:{fgColor:{rgb:'2E6DA4'}},alignment:{horizontal:'center',wrapText:true}};
+  const sItemGroup={font:{bold:true,sz:10,color:{rgb:'1A3A5C'}},fill:{fgColor:{rgb:'D6E4F0'}},alignment:{horizontal:'left'}};
+  const sItemGroupNum={font:{bold:true,sz:10,color:{rgb:'1A3A5C'}},fill:{fgColor:{rgb:'D6E4F0'}},alignment:{horizontal:'right'}};
+  const sSub={font:{sz:9,color:{rgb:'222222'}},fill:{fgColor:{rgb:'FFFFFF'}},alignment:{horizontal:'left',indent:1}};
+  const sSubNum={font:{sz:9,color:{rgb:'222222'}},fill:{fgColor:{rgb:'FFFFFF'}},alignment:{horizontal:'right'}};
+  const sSubFormula={font:{sz:9,color:{rgb:'000099'}},fill:{fgColor:{rgb:'FFFFFF'}},alignment:{horizontal:'right'}};
+  const sTotal={font:{bold:true,sz:11,color:{rgb:'FFFFFF'}},fill:{fgColor:{rgb:'1A3A5C'}},alignment:{horizontal:'right'}};
+  const sTotalLabel={font:{bold:true,sz:11,color:{rgb:'FFFFFF'}},fill:{fgColor:{rgb:'1A3A5C'}},alignment:{horizontal:'center'}};
 
-  // ── CABECERA MARCA ──
-  merge(0, R, COLS, R);
-  setCell(0, R, '🏗  COMASA — Cotización', sBrand);
-  for (let c = 1; c <= COLS; c++) setCell(c, R, '', sBrand);
+  merge(0,R,COLS,R);
+  cell(0,R,'🏗  COMASA — Cotización',sBrand);
+  for(let c=1;c<=COLS;c++) cell(c,R,'',sBrand);
   R++;
 
-  // ── META ──
-  const metaRows = [
-    ['Fecha', fecha],
-    notas ? ['Notas', notas] : null,
-    ['Tarifa Fabricación', `S/ ${puFab.toFixed(2)} / kg`],
-    ['Tarifa Montaje',     `S/ ${puMont.toFixed(2)} / kg`],
-  ].filter(Boolean);
-
-  metaRows.forEach(([lbl, val]) => {
-    setCell(0, R, lbl, sMetaLabel);
-    merge(1, R, COLS, R);
-    setCell(1, R, val, sMeta);
-    for (let c = 2; c <= COLS; c++) setCell(c, R, '', sMeta);
-    R++;
-  });
-  R++; // fila vacía separadora
-
-  // ── ENCABEZADOS COLUMNAS ──
-  ['#', 'Descripción', 'Cant.', 'Unidad', 'Peso Unit (kg)', 'Peso Total (kg)', 'PU Fab (S/)', 'PU Mont (S/)', 'Subtotal (S/)']
-    .forEach((h, c) => setCell(c, R, h, sHeader));
-  R++;
-
-  // ── DATOS ──
-  const itemTotalExcelRows = []; // filas Excel (base 1) de los totales de cada ítem
-
-  items.forEach((it, i) => {
-    if (!it.subs.length) return; // saltar ítems sin sub-ítems
-
-    const firstSubR = R; // fila base-0 donde empieza el primer sub-ítem
-
-    // Insertar sub-ítems primero
-    it.subs.forEach((s, j) => {
-      const exR = R + 1; // fila Excel base-1
-      setCell(0, R, `${i + 1}.${j + 1}`, sSub);
-      setCell(1, R, s.desc,   sSub);
-      numCell(2, R, s.cant,   '0.##',           sSubNum);
-      setCell(3, R, s.unidad, sSub);
-      numCell(4, R, s.pesoU,  '0.000',           sSubNum);
-      fmlaCell(5, R, `C${exR}*E${exR}`, '0.000', sSubFml);
-      numCell(6, R, s.puFab,  '"S/"#,##0.00',    sSubRate);
-      numCell(7, R, s.puMont, '"S/"#,##0.00',    sSubRate);
-      fmlaCell(8, R, `F${exR}*(G${exR}+H${exR})`, '"S/"#,##0.00', sSubFml);
-      R++;
+  [['Fecha',fecha],notas?['Notas',notas]:null,['Tarifa Fabricación',`S/ ${puFab.toFixed(2)} / kg`],['Tarifa Montaje',`S/ ${puMont.toFixed(2)} / kg`]]
+    .filter(Boolean).forEach(([lbl,val])=>{
+      merge(1,R,COLS,R); cell(0,R,lbl,sMetaLabel); cell(1,R,val,sMeta);
+      for(let c=2;c<=COLS;c++) cell(c,R,'',sMeta); R++;
     });
-
-    const lastSubR = R - 1; // fila base-0 del último sub-ítem
-    // Convertir a Excel base-1
-    const exFirst = firstSubR + 1;
-    const exLast  = lastSubR  + 1;
-    const exGroup = R + 1;           // fila Excel base-1 para la fila de grupo
-
-    // Fila resumen del ítem (DESPUÉS de los sub-ítems)
-    setCell(0, R, `${i + 1}`, sItemGroup);
-    merge(1, R, 7, R);
-    setCell(1, R, it.nombre, sItemGroup);
-    for (let c = 2; c <= 7; c++) setCell(c, R, '', sItemGroup);
-    fmlaCell(8, R, `SUM(I${exFirst}:I${exLast})`, '"S/"#,##0.00', sItemGroupR);
-    itemTotalExcelRows.push(exGroup);
-    R++;
-    R++; // fila vacía entre ítems
-  });
-
-  // ── TOTAL GENERAL ──
-  merge(0, R, 4, R);
-  setCell(0, R, 'TOTAL GENERAL', sTotalLabel);
-  for (let c = 1; c <= 4; c++) setCell(c, R, '', sTotalLabel);
-  setCell(5, R, '', sTotal);
-  setCell(6, R, '', sTotal);
-  setCell(7, R, '', sTotal);
-  // Suma de todas las filas de grupo de ítem
-  const totalFormula = itemTotalExcelRows.map(r => `I${r}`).join('+');
-  fmlaCell(8, R, totalFormula, '"S/"#,##0.00', sTotal);
   R++;
 
-  // ── CONFIGURAR HOJA ──
-  ws['!ref']    = XLSX.utils.encode_range({ s: { c: 0, r: 0 }, e: { c: COLS, r: R } });
-  ws['!merges'] = merges;
-  ws['!cols']   = [{ wch:8 },{ wch:36 },{ wch:7 },{ wch:8 },{ wch:13 },{ wch:13 },{ wch:12 },{ wch:12 },{ wch:14 }];
-  ws['!rows']   = [{ hpt:28 }];
-  XLSX.utils.book_append_sheet(wb, ws, 'Cotización');
+  ['Item','Descripción','Cant.','Unidad','Peso Unit (kg)','Peso Total (kg)','PU Fab (S/)','PU Mont (S/)','Subtotal (S/)']
+    .forEach((h,c)=>cell(c,R,h,sHeader));
+  const headerRow=R; R++;
 
-  // ── HOJA TARIFAS ──
-  const wsTar = {};
-  wsTar['A1'] = { v:'Parámetro',           t:'s', s:sHeader };
-  wsTar['B1'] = { v:'Valor',               t:'s', s:sHeader };
-  wsTar['A2'] = { v:'Tarifa Fabricación (S//kg)', t:'s' };
-  wsTar['B2'] = { v:puFab,  t:'n', z:'"S/"0.00' };
-  wsTar['A3'] = { v:'Tarifa Montaje (S//kg)',      t:'s' };
-  wsTar['B3'] = { v:puMont, t:'n', z:'"S/"0.00' };
-  wsTar['!ref']  = 'A1:B3';
-  wsTar['!cols'] = [{ wch:28 },{ wch:14 }];
-  XLSX.utils.book_append_sheet(wb, wsTar, 'Tarifas');
+  const itemTotalRows=[];
+  items.forEach((it,i)=>{
+    const subRows=[];
+    it.subs.forEach((s,j)=>{
+      const exR=R+1;
+      cell(0,R,`${i+1}.${j+1}`,sSub); cell(1,R,s.desc,sSub);
+      numCell(2,R,s.cant,'0.##',sSubNum); cell(3,R,s.unidad,sSub);
+      numCell(4,R,s.pesoU,'0.000',sSubNum);
+      fmlaCell(5,R,`C${exR}*E${exR}`,'0.000',sSubFormula);
+      numCell(6,R,s.puFab,'"S/"#,##0.00',{...sSubNum,font:{sz:9,color:{rgb:'0000CC'}}});
+      numCell(7,R,s.puMont,'"S/"#,##0.00',{...sSubNum,font:{sz:9,color:{rgb:'0000CC'}}});
+      fmlaCell(8,R,`F${exR}*(G${exR}+H${exR})`,'"S/"#,##0.00',sSubFormula);
+      subRows.push(R+1); R++;
+    });
+    const firstSub=subRows[0], lastSub=subRows[subRows.length-1];
+    cell(0,R,`${i+1}`,sItemGroup); merge(1,R,7,R); cell(1,R,it.nombre,sItemGroup);
+    for(let c=2;c<=7;c++) cell(c,R,'',sItemGroup);
+    fmlaCell(8,R,`SUM(I${firstSub}:I${lastSub})`,'"S/"#,##0.00',sItemGroupNum);
+    itemTotalRows.push(R+1); R++; R++;
+  });
 
-  // ── DESCARGAR ──
-  const fechaFile = fecha.replace(/\//g, '-');
-  XLSX.writeFile(wb, `COMASA_${fechaFile}.xlsx`, { bookType:'xlsx', cellStyles:true });
+  const dataStart=headerRow+2, dataEnd=R;
+  merge(0,R,4,R); cell(0,R,'TOTAL GENERAL',sTotalLabel);
+  for(let c=1;c<=4;c++) cell(c,R,'',sTotalLabel);
+  fmlaCell(5,R,`SUMPRODUCT((ISNUMBER(FIND(".",A${dataStart}:A${dataEnd})))*F${dataStart}:F${dataEnd})`,'#,##0.000 "kg"',sTotal);
+  cell(6,R,'',sTotal); cell(7,R,'',sTotal);
+  fmlaCell(8,R,itemTotalRows.map(r=>`I${r}`).join('+'),'"S/"#,##0.00',sTotal);
+  R++;
+
+  ws['!ref']=XLSX.utils.encode_range({s:{c:0,r:0},e:{c:COLS,r:R}});
+  ws['!merges']=merges;
+  ws['!cols']=[{wch:8},{wch:36},{wch:7},{wch:8},{wch:13},{wch:13},{wch:12},{wch:12},{wch:14}];
+  ws['!rows']=[{hpt:28}];
+  XLSX.utils.book_append_sheet(wb,'Cotización',ws);
+
+  const wsTar={};
+  wsTar['A1']={v:'Parámetro',t:'s',s:sHeader}; wsTar['B1']={v:'Valor',t:'s',s:sHeader};
+  wsTar['A2']={v:'Tarifa Fabricación (S//kg)',t:'s'}; wsTar['B2']={v:puFab,t:'n',z:'"S/"0.00'};
+  wsTar['A3']={v:'Tarifa Montaje (S//kg)',t:'s'}; wsTar['B3']={v:puMont,t:'n',z:'"S/"0.00'};
+  wsTar['!ref']='A1:B3'; wsTar['!cols']=[{wch:28},{wch:14}];
+  XLSX.utils.book_append_sheet(wb,'Tarifas',wsTar);
+
+  const fechaFile=fecha.replace(/\//g,'-'); 
+  XLSX.writeFile(wb,`COMASA_${fechaFile}.xlsx`,{bookType:'xlsx',cellStyles:true});
   toast('✅ Excel exportado con fórmulas');
 }
 
