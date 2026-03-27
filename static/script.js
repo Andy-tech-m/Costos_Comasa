@@ -2,7 +2,7 @@
 //  COMASA PRO — script.js  v2.0  (Flask + MySQL)
 // ══════════════════════════════════════════════════════
 
-const API = '';   // mismo origen; si Flask corre en otro puerto: 'http://localhost:5000'
+const API = 'https://costos-comasa.onrender.com';   // mismo origen; si Flask corre en otro puerto: 'http://localhost:5000'
 
 // ─── CATÁLOGO en memoria (cargado desde la BD) ───
 let CAT = {};             // { "NOMBRE CATEGORÍA": [ {codigo, descripcion, peso_unit, unidad}, ... ] }
